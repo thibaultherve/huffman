@@ -7,11 +7,11 @@
 
 int main(void) {
 	
-	char* texte = "Brioche mdr";
+	
 
-	char* code = compression(texte);
+	char* code = compression("a_lire");
 
-	printf("\n%s ->\n%s\n", texte, code);
+	printf("\n\n%s\n", code);
 	
 	return EXIT_SUCCESS;
 }
