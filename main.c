@@ -5,13 +5,9 @@
 #include "noeud.h"
 #include "huffman.h"
 
-int main(void) {
-	
-	
+int main(void) {	
 
-	char* code = compression("a_lire");
-
-	printf("\n\n%s\n", code);
+	compression("a_lire");
 	
 	return EXIT_SUCCESS;
 }

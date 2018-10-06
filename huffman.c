@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include <string.h>
-
+#include <math.h>
 #include "noeud.h"
 #include "huffman.h"
 
@@ -10,14 +10,14 @@
 char* chaine;
 char* codage[NB_CARACTERE];
 
-char* compression(char* f) {
+void compression(char* f) {
 	int occurrences[NB_CARACTERE] = {0};
 
 	FILE* fichier = fopen(f, "r");
 
 	if (fichier == NULL) {
 		fprintf(stderr, "Erreur d'ouverture du fichier en lecture");
-		return NULL;
+		return;
 	}
 	
 	printf("Ouverture du fichier réussi !\n");
@@ -29,15 +29,22 @@ char* compression(char* f) {
 	while((c = fgetc(fichier)) != EOF) {
 		if (c > 255 || c<0) {
 			fprintf(stderr, "Caracteres incorrects dans le fichier");
-			return NULL;
+			return;
 		}
 		texte = realloc(texte, i+1*sizeof(char));
 		texte[i] = c;
 		i++;
 	}
-	printf("\n");
+	i++;
+	texte = realloc(texte, i*sizeof(char));
+	texte[i] = '\0';
 
-	for (int i=0; i<(int)strlen(texte); i++) {
+	
+
+
+	int taille_texte = (int)strlen(texte);
+
+	for (int i=0; i<taille_texte; i++) {
 		for (int j=0; j<=NB_CARACTERE; j++) {
 			if (texte[i] == j) {
 				occurrences[j]++;
@@ -125,8 +132,46 @@ char* compression(char* f) {
 		
 	}	
 
-	//printf("sequence_compressee = %s\n", sequence_compressee);
-	return sequence_compressee;
+	fclose(fichier);
+
+	fichier = fopen("code_compresse.bin", "wb");
+
+	if(fichier == NULL) {
+		fprintf(stderr, "Erreur d'ouverture du fichier en ecriture\n");
+		return;
+	}
+
+	printf("sequence_compressee = %s\n", sequence_compressee);
+
+	
+
+	char* octet_a_ecrire = malloc(9*sizeof(char));
+
+	octet_a_ecrire[0] = '\0';
+	printf("taille %lu\n", strlen(octet_a_ecrire));
+	for(int i=0; i< (int) strlen(sequence_compressee); i=i+8) {
+		octet_a_ecrire = strncpy(octet_a_ecrire, &sequence_compressee[i], 8);
+		octet_a_ecrire[8] = '\0';
+		
+		
+
+		if (strlen(octet_a_ecrire) < 9) {
+			for (int i = (int) strlen(octet_a_ecrire); i < 9; i++)
+			{
+				octet_a_ecrire[i] = '0';
+			}
+			octet_a_ecrire[8] = '\0';
+		}
+		printf("taille %lu\n", strlen(octet_a_ecrire));
+		printf("octet_a_ecrire = %s\n", octet_a_ecrire);
+		unsigned long int mavaleur = strtoll(octet_a_ecrire, NULL, 2);
+		fwrite(&mavaleur, sizeof(char), 1, fichier);
+	}
+	
+
+	fclose(fichier);
+
+	
 }
 
 void fc_codage(nd n, int cote, int taille_chaine) {
