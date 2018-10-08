@@ -16,7 +16,6 @@ nd creer_noeud(nd fils_gauche, nd fils_droit, char lettre, int occurrence, int t
 	n->fils_droit = fils_droit;
 	n->type = type;
 
-	
 	return n;	
 }
 
@@ -48,4 +47,22 @@ nd* trier_tab_noeuds(nd* n, int nb_noeuds) {
 		n[j] = noeud_tmp;
 	}
 	return n;
+}
+
+void detruire_tout_noeuds(nd* n) {
+	if ((*n) != NULL) {
+		
+		if (((*n)->fils_gauche) != NULL) {
+			detruire_tout_noeuds(&((*n)->fils_gauche));
+		}
+
+		if (((*n)->fils_droit) != NULL) {
+			detruire_tout_noeuds(&((*n)->fils_droit));
+		}
+
+		free((*n));
+		(*n) = NULL;
+
+		
+	}
 }

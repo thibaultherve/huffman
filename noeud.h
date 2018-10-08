@@ -19,5 +19,6 @@ nd creer_noeud(nd fils_gauche, nd fils_droit, char lettre, int occurrence, int t
 
 nd* trier_tab_noeuds(nd* n, int nb_noeuds);
 void setPere(nd fils, nd pere);
+void detruire_tout_noeuds(nd* n);
 
 #endif
