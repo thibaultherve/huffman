@@ -37,12 +37,7 @@ nd* trier_tab_noeuds(nd* n, int nb_noeuds) {
 		}
 		n[j] = noeud_tmp;
 	}
-	for (int i = 0; i < nb_noeuds; ++i)
-	{
-		printf("noeuds [%c]:%d\n", n[i]->lettre, n[i]->occurrence);
-	}
-	printf("\n");
-	
+
 	return n;
 }
 

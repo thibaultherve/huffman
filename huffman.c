@@ -55,7 +55,6 @@ char* compression(char* fin, char* fout) {
 	for (int i=0; i<NB_CARACTERE; i++) {
 		if (occurrences[i]>0) {
 			nb_noeuds++;
-			printf("occurrences[%c] = %d\n", i, occurrences[i]);
 		}
 	}
 
@@ -70,7 +69,7 @@ char* compression(char* fin, char* fout) {
 		}
 
 	}
-	int numero_noeud=65;
+	int numero_noeud=255;
 	while (nb_noeuds > 1) {
 		tab_noeuds = trier_tab_noeuds(tab_noeuds, nb_noeuds);
 
@@ -104,11 +103,7 @@ char* compression(char* fin, char* fout) {
 
 	fc_codage(racine, -1, 0);
 
-	for (int i = 0; i < NB_CARACTERE; i++)
-	{
-		printf("codage[%c] = %s\n", i, codage[i]);
-	}
-	
+
 	for (int i = 0; i<(int)strlen(texte); i++) {
 		taille_sequence_compressee += strlen(codage[(int)texte[i]]);	
 	}
@@ -287,7 +282,7 @@ char* decompression(char* fin, char* fout) {
 			
 		}
 		else if (tab_noeuds[0]->type == TYPE_NOEUD && tab_noeuds[1]->type == TYPE_NOEUD) {
-			tab_noeuds[0] = creer_noeud(tab_noeuds[1], tab_noeuds[0], numero_noeud, tab_noeuds[0]->occurrence + tab_noeuds[1]->occurrence, TYPE_NOEUD);
+			tab_noeuds[0] = creer_noeud(tab_noeuds[0], tab_noeuds[1], numero_noeud, tab_noeuds[0]->occurrence + tab_noeuds[1]->occurrence, TYPE_NOEUD);
 		
 		}
 		else {
