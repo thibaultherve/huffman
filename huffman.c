@@ -10,14 +10,14 @@
 char* chaine;
 char* codage[NB_CARACTERE];
 
-void compression(char* f) {
+char* compression(char* fin, char* fout) {
 	int occurrences[NB_CARACTERE] = {0};
 
-	FILE* fichier = fopen(f, "r");
+	FILE* fichier = fopen(fin, "r");
 
 	if (fichier == NULL) {
-		fprintf(stderr, "Erreur d'ouverture du fichier en lecture");
-		return;
+		fprintf(stderr, "Erreur d'ouverture du fichier en lecture\n");
+		return NULL;
 	}
 	
 
@@ -95,33 +95,37 @@ void compression(char* f) {
 
 	nd racine = tab_noeuds[0];
 
-	char* sequence_compressee = malloc(sizeof(char));
 	int taille_sequence_compressee = 0;
-	
+
+	//printf("taille sequence_compressee = %d\n", taille_sequence_compressee);
+
 	fc_codage(racine, -1, 0);
 
 	for (int i = 0; i<(int)strlen(texte); i++) {
+		taille_sequence_compressee += strlen(codage[(int)texte[i]]);	
+	}
 
-		taille_sequence_compressee += strlen(codage[texte[i]]);
-		sequence_compressee = realloc(sequence_compressee, taille_sequence_compressee*sizeof(char));
+
+	//sequence_compressee = realloc(sequence_compressee, taille_sequence_compressee*sizeof(char));
+	char* sequence_compressee = calloc(taille_sequence_compressee+1, sizeof(char));
+	sequence_compressee[0] = '\0';
+
+	for (int i = 0; i<(int)strlen(texte); i++) {
+		sequence_compressee = strcat(sequence_compressee, codage[(int)texte[i]]);
+	}
 
 	
 
-		sequence_compressee = strcat(sequence_compressee, codage[texte[i]]);
-		
-	}
+
 	free(texte);
 	fclose(fichier);
 
-	fichier = fopen("code_compresse.bin", "wb");
+	fichier = fopen(fout, "wb");
 
 	if(fichier == NULL) {
 		fprintf(stderr, "Erreur d'ouverture du fichier en ecriture\n");
-		return;
+		return NULL;
 	}
-
-	printf("COMPRESSION\n%s\n", sequence_compressee);
-
 
 	for (int i=0; i<NB_CARACTERE; i++) {
 		if (occurrences[i]>0) {
@@ -160,7 +164,7 @@ void compression(char* f) {
 	}
 
 	fclose(fichier);
-	
+
 	detruire_tout_noeuds(&racine);
 	free(chaine);
 
@@ -168,9 +172,12 @@ void compression(char* f) {
 	{
 		free(codage[i]);
 	}
+
 	free(octet_a_ecrire);
-	free(sequence_compressee);
+	//free(sequence_compressee);
 	free(tab_noeuds);
+
+	return sequence_compressee;
 	
 	
 }
@@ -196,18 +203,19 @@ void fc_codage(nd n, int cote, int taille_chaine) {
 	if (n->type == TYPE_FEUILLE) {
 		//cas où il n'y a qu'un seul caractère différent
 		if (taille_chaine == 0) {
-			codage[n->lettre] = realloc(codage[n->lettre], sizeof(char));
+			codage[n->lettre] = realloc(codage[n->lettre], 2*sizeof(char));
 			codage[n->lettre][0] = '0';
+			codage[n->lettre][1] = '\0';
 		}
 		else {
-			codage[n->lettre] = realloc(codage[n->lettre], taille_chaine*sizeof(char));
+			codage[n->lettre] = realloc(codage[n->lettre], taille_chaine+1*sizeof(char));
 
 			for (int i=0; i<taille_chaine; i++) {		
 				codage[n->lettre][i] = chaine[i];
 				
 			}
 			
-			
+			codage[n->lettre][taille_chaine] = '\0';
 		}
 	}
 
@@ -215,10 +223,15 @@ void fc_codage(nd n, int cote, int taille_chaine) {
 	fc_codage(n->fils_droit, DROIT, taille_chaine);
 }
 
-void decompression(char* f) {
-	FILE* fichier = fopen(f, "rb");
+char* decompression(char* fin, char* fout) {
+	FILE* fichier = fopen(fin, "rb");
+	
+	if(fichier == NULL) {
+		fprintf(stderr, "Erreur d'ouverture du fichier en ecriture\n");
+		return NULL;
+	}
 
-	char chaine[12];
+	char* chaine = calloc(14, sizeof(char));
 	int occurrences[NB_CARACTERE] = {0};
 	unsigned char c;
 	int nb;
@@ -226,14 +239,16 @@ void decompression(char* f) {
 	while(fscanf(fichier, "%c %d|", &c, &nb) == 2) {
 		occurrences[c] = nb;
 	}
+
 	int nb_bits_fin = 0;
 
 	fscanf(fichier, "NBEndBits=%d", &nb_bits_fin);
-	fread(&chaine, sizeof(char), 13, fichier);	
 
-	if (strcmp(chaine, "\nCOMPRESSION\n") != 0) {
+	fread(chaine, sizeof(char), 13, fichier);	
+	chaine[13] = '\0';
+	if (strcmp(chaine, "\nCOMPRESSION\n\0") != 0) {
 		fprintf(stderr, "Le contenu du fichier n'est pas au bon format\n");
-		return;
+		return NULL;
 	}
 
 	//comptage des noeuds
@@ -273,8 +288,6 @@ void decompression(char* f) {
 		}
 		nb_noeuds--;
 
-
-
 		for(int i=1; i<nb_noeuds; i++) {
 			tab_noeuds[i] = tab_noeuds[i+1];
 		}
@@ -288,22 +301,28 @@ void decompression(char* f) {
 	
 	char* sequence_compressee = malloc(sizeof(char));
 	int compt =1;
-
-
 	
 	while(fread(&valeur, sizeof(unsigned char), 1, fichier) == 1) {
 		sequence_compressee = realloc(sequence_compressee, 1+(compt*8)*sizeof(char));
 
-		sequence_compressee = strcat(sequence_compressee, toBinary(valeur));
+		for (int i = (compt*8)-8; i < (compt*8); i++) {
+			//printf("sequence_compressee[%d] = \\0 \n", i);
+			sequence_compressee[i] = '\0';
+		}
+
+		//printf("%s\n", sequence_compressee);
+		
+		char* valeur_binaire = toBinary(valeur);
+
+		sequence_compressee = strcat(sequence_compressee, valeur_binaire);
+
+		free(valeur_binaire);
 		compt++;
 	}
 
 	char* buffer = malloc(sizeof(char));
-
 	int taille_sequence_DEcompressee = 0;
 	char* sequence_DEcompressee = malloc(taille_sequence_DEcompressee*sizeof(char));
-
-
 
 	//parcours de notre sequence compresse
 	for (int i = 0, k=0; i < (int) strlen(sequence_compressee) - nb_bits_fin; i++) {
@@ -311,25 +330,25 @@ void decompression(char* f) {
 		int nb_resultat = 0;
 		char save_cara;
 
-		if (k>7)
-			k=0;
-
 		buffer = realloc(buffer, (k+2)*sizeof(char));
 		buffer[k] = sequence_compressee[i];
 		buffer[k+1] = '\0';
+		//printf("buffer = %s\n", buffer);
 
 
 
 		for(int j=0; j<NB_CARACTERE; j++) {
 			if (codage[j] != NULL) {
-				if (strncmp(codage[j], buffer, i+1) == 0) {
+				if (strncmp(codage[j], buffer, k+1) == 0) {
+					//printf("codage[%c] = %s | buffer = %s\n", j, codage[j], buffer);
 					nb_resultat++;
 					save_cara = j;
 				}
-			}			
+			}
 		}
 
 		if(nb_resultat == 1){
+			//printf("\nNouveau caractere : %c\n", save_cara);
 
 			buffer = realloc(buffer, sizeof(char));
 			buffer[0] = '\0';
@@ -348,8 +367,29 @@ void decompression(char* f) {
 
 	sequence_DEcompressee = realloc(sequence_DEcompressee, (taille_sequence_DEcompressee+1)*sizeof(char));
 	sequence_DEcompressee[taille_sequence_DEcompressee] = '\0';
-	printf("DECOMPRESSION\n%s\n", sequence_DEcompressee);
+	
 
+	fclose(fichier);
+
+	fichier = fopen(fout, "w");
+
+	fprintf(fichier, "%s", sequence_DEcompressee);
+
+
+
+	for (int i = 0; i < NB_CARACTERE; i++)
+	{
+		free(codage[i]);
+	}
+	free(buffer);
+	free(chaine);
+	detruire_tout_noeuds(&racine);
+	free(sequence_compressee);
+	
+	free(tab_noeuds);
+
+	fclose(fichier);
+	return sequence_DEcompressee;
 }
 
 

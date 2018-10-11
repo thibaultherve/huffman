@@ -32,15 +32,6 @@ nd* trier_tab_noeuds(nd* n, int nb_noeuds) {
 
 		j = i;
 		while(j>0 && ((n[j-1]->occurrence > occurrence)  || (n[j-1]->occurrence == occurrence && n[j-1]->lettre > lettre)) ) {
-			if(n[j-1]->type == TYPE_NOEUD && n[i]->type == TYPE_NOEUD /*&& n[j-1]->occurrence >= occurrence*/) {
-				//printf("correct\n");
-			}
-			else {
-				/*printf("n[%d] = [%c]:%d type = %d\n", j-1, n[j-1]->lettre, n[j-1]->occurrence, n[j-1]->type);
-				printf("n[%d] = [%c]:%d type = %d\n", i, n[j-1]->lettre, n[i]->occurrence, n[i]->type);
-				printf("incorrect\n");*/
-			}
-
 			n[j] = n[j-1];
 			j = j-1;
 		}
