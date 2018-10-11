@@ -1,3 +1,5 @@
+/* Thibault HERVE / David BAGORY */
+
 #ifndef NOEUD_H
 #define NOEUD_H
 

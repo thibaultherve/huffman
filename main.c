@@ -1,3 +1,5 @@
+/* Thibault HERVE / David BAGORY */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

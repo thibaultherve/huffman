@@ -1,3 +1,5 @@
+/* Thibault HERVE / David BAGORY */
+
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 

@@ -1,11 +1,11 @@
+/* Thibault HERVE / David BAGORY */
+
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <string.h>
 
 #include "noeud.h"
-
-
 
 nd creer_noeud(nd fils_gauche, nd fils_droit, char lettre, int occurrence, int type) {
 
@@ -37,6 +37,12 @@ nd* trier_tab_noeuds(nd* n, int nb_noeuds) {
 		}
 		n[j] = noeud_tmp;
 	}
+	for (int i = 0; i < nb_noeuds; ++i)
+	{
+		printf("noeuds [%c]:%d\n", n[i]->lettre, n[i]->occurrence);
+	}
+	printf("\n");
+	
 	return n;
 }
 
